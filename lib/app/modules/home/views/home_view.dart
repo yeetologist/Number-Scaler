@@ -26,16 +26,6 @@ class HomeView extends GetView<HomeController> {
                 Get.toNamed(Routes.BOX);
               },
             ),
-            // AngledScale(),
-            // Spacer(),
-            // Row(
-            //   children: [
-            //     NumberBox(number: 20),
-            //   ],
-            // ),
-            // SizedBox(
-            //   height: 10,
-            // )
           ],
         ),
       ),

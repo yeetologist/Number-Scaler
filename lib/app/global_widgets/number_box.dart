@@ -9,7 +9,7 @@ class NumberBox extends StatelessWidget {
     super.key,
     required this.number,
     this.width = 80,
-    this.height = 60,
+    this.height = 90,
   });
 
   @override
@@ -17,6 +17,7 @@ class NumberBox extends StatelessWidget {
     return Container(
       width: width,
       height: height,
+      margin: EdgeInsets.symmetric(horizontal: 8, vertical: 5),
       decoration: BoxDecoration(
         color: Colors.grey, // Gray color
         borderRadius: BorderRadius.circular(8),

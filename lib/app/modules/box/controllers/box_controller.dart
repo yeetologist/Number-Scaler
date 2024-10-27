@@ -1,9 +1,8 @@
 import 'package:get/get.dart';
 
 class BoxController extends GetxController {
-  //TODO: Implement BoxController
-
-  final count = 0.obs;
+  final Map<int, bool> score = {};
+  final List<int> choices = [1, 2, 3, 4, 5];
   @override
   void onInit() {
     super.onInit();
@@ -18,6 +17,4 @@ class BoxController extends GetxController {
   void onClose() {
     super.onClose();
   }
-
-  void increment() => count.value++;
 }
