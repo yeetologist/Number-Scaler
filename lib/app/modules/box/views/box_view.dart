@@ -22,7 +22,9 @@ class BoxView extends GetView<BoxController> {
           actions: [
             IconButton(
               onPressed: () {
-                controller.reset();
+                controller.reset(controller.arguments['control'] == Control.drag
+                    ? false
+                    : true);
               },
               icon: Icon(Icons.refresh),
             ),
@@ -39,8 +41,7 @@ class BoxView extends GetView<BoxController> {
             GetBuilder<BoxController>(
               id: 'scale',
               builder: (_) => DragTarget<int>(
-                builder: (context, candidateData, rejectedData) =>
-                    DoubleNumberScale(
+                builder: (context, candidateData, rejectedData) => NumberScale(
                   isSingleInput: controller.arguments['control'] == Control.drag
                       ? false
                       : true,
@@ -98,9 +99,11 @@ class BoxView extends GetView<BoxController> {
                       value: controller.rightSecondWeight.value,
                       isLeftPressed: (value) {
                         if (value == true) {
-                          controller.addLeft();
+                          controller.setRightSecondWeight =
+                              controller.getRightSecondWeight - 1;
                         } else {
-                          controller.addRight();
+                          controller.setRightSecondWeight =
+                              controller.getRightSecondWeight + 1;
                         }
                       },
                     ),

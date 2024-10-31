@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 
-class DoubleNumberScale extends StatefulWidget {
+class NumberScale extends StatefulWidget {
   final int leftWeight;
   final int rightWeight;
   final int rightSecondWeight;
   final bool isSingleInput;
 
-  const DoubleNumberScale({
+  const NumberScale({
     super.key,
     this.leftWeight = 0,
     this.rightWeight = 0,
@@ -15,14 +15,14 @@ class DoubleNumberScale extends StatefulWidget {
   });
 
   @override
-  State<DoubleNumberScale> createState() => _DoubleNumberScaleState();
+  State<NumberScale> createState() => _NumberScaleState();
 }
 
-class _DoubleNumberScaleState extends State<DoubleNumberScale>
+class _NumberScaleState extends State<NumberScale>
     with SingleTickerProviderStateMixin {
   late AnimationController _controller;
   late Animation<double> _animation;
-  double _currentAngle = 0.0;
+  double currentAngle = 0.0;
 
   @override
   void initState() {
@@ -33,7 +33,7 @@ class _DoubleNumberScaleState extends State<DoubleNumberScale>
     );
     _updateAnimation();
     _animation.addListener(() {
-      _currentAngle = _animation.value;
+      currentAngle = _animation.value;
     });
   }
 
@@ -44,7 +44,7 @@ class _DoubleNumberScaleState extends State<DoubleNumberScale>
     angle = angle.clamp(-0.3, 0.3);
 
     _animation = Tween<double>(
-      begin: _currentAngle,
+      begin: currentAngle,
       end: angle * -1,
     ).animate(CurvedAnimation(
       parent: _controller,
@@ -56,18 +56,18 @@ class _DoubleNumberScaleState extends State<DoubleNumberScale>
 
   double _calculateAngle(bool isSingleInput) {
     if (isSingleInput) {
-      return (widget.leftWeight -
-              (widget.rightWeight * widget.rightSecondWeight)) /
-          500;
-    } else {
       return ((widget.leftWeight * widget.rightWeight) -
               widget.rightSecondWeight) /
+          500;
+    } else {
+      return (widget.leftWeight -
+              (widget.rightWeight * widget.rightSecondWeight)) /
           500;
     }
   }
 
   @override
-  void didUpdateWidget(DoubleNumberScale oldWidget) {
+  void didUpdateWidget(NumberScale oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.leftWeight != widget.leftWeight ||
         oldWidget.rightWeight != widget.rightWeight ||
@@ -91,7 +91,8 @@ class _DoubleNumberScaleState extends State<DoubleNumberScale>
           angle: _animation.value,
           child: CustomPaint(
             size: const Size(400, 400),
-            painter: DoubleScalePainter(
+            painter: ScalePainter(
+              currentAngle: currentAngle,
               isSingleInput: widget.isSingleInput,
               leftWeight: widget.leftWeight,
               rightWeight: widget.rightWeight,
@@ -104,14 +105,16 @@ class _DoubleNumberScaleState extends State<DoubleNumberScale>
   }
 }
 
-class DoubleScalePainter extends CustomPainter {
+class ScalePainter extends CustomPainter {
   final bool isSingleInput;
   final int leftWeight;
   final int rightWeight;
   final int rightSecondWeight;
+  final double currentAngle;
 
-  DoubleScalePainter(
+  ScalePainter(
       {this.isSingleInput = true,
+      this.currentAngle = 0,
       this.leftWeight = 0,
       this.rightWeight = 0,
       this.rightSecondWeight = 0});
@@ -170,7 +173,7 @@ class DoubleScalePainter extends CustomPainter {
         bulbRadius, paintLightFill);
 
     //PLACEHOLDER LEFT
-    drawPlaceholder(canvas, size, paintLightFill, paintDeep, size.width * 0,
+    _drawPlaceholder(canvas, size, paintLightFill, paintDeep, size.width * 0,
         size.height * 0.07);
 
     //PILLAR RIGHT
@@ -190,11 +193,11 @@ class DoubleScalePainter extends CustomPainter {
         bulbRadius, paintLightFill);
 
     //PLACEHOLDER RIGHT
-    drawPlaceholder(canvas, size, paintLightFill, paintDeep, size.width * 0.61,
+    _drawPlaceholder(canvas, size, paintLightFill, paintDeep, size.width * 0.61,
         size.height * 0.07);
 
     // Draw the weight numbers
-    _drawWeightBox(canvas, size, isSingleInput);
+    _drawWeightBox(canvas, size, isSingleInput, currentAngle);
     _drawWeightText(canvas, size, "\u00D7", 0, isSingleInput);
     _drawWeightText(
         canvas, size, leftWeight.toStringAsFixed(0), 1, isSingleInput);
@@ -204,40 +207,215 @@ class DoubleScalePainter extends CustomPainter {
         canvas, size, rightSecondWeight.toStringAsFixed(0), 3, isSingleInput);
   }
 
-  void _drawWeightBox(Canvas canvas, Size size, bool isSingleInput) {
+  void _drawWeightBox(
+      Canvas canvas, Size size, bool isSingleInput, double currentAngle) {
     if (isSingleInput) {
-      canvas.drawRRect(
-        RRect.fromRectAndRadius(
-          Rect.fromLTWH(size.width * 0.62, size.height * 0.085,
-              size.width * 0.357, size.height * 0.17),
-          const Radius.circular(10),
-        ),
-        Paint()
-          ..color = const Color.fromARGB(184, 255, 255, 255)
-          ..style = PaintingStyle.fill,
-      );
-    } else {
-      canvas.drawRRect(
-        RRect.fromRectAndRadius(
-          Rect.fromLTWH(size.width * 0.62, size.height * 0.09,
-              size.width * 0.15, size.height * 0.16),
-          const Radius.circular(10),
-        ),
-        Paint()
-          ..color = const Color.fromARGB(184, 255, 255, 255)
-          ..style = PaintingStyle.fill,
-      );
+      if (currentAngle != 0) {
+        // Single Input Wrong
+        canvas.drawRRect(
+          RRect.fromRectAndRadius(
+            Rect.fromLTWH(size.width * 0.62, size.height * 0.085,
+                size.width * 0.365, size.height * 0.17),
+            const Radius.circular(10),
+          ),
+          Paint()
+            ..color = Colors.red[700]!
+            ..style = PaintingStyle.stroke
+            ..strokeWidth = 2,
+        );
 
-      canvas.drawRRect(
-        RRect.fromRectAndRadius(
-          Rect.fromLTWH(size.width * 0.83, size.height * 0.09,
-              size.width * 0.15, size.height * 0.16),
-          const Radius.circular(10),
-        ),
-        Paint()
-          ..color = const Color.fromARGB(184, 255, 255, 255)
-          ..style = PaintingStyle.fill,
-      );
+        canvas.drawRRect(
+          RRect.fromRectAndRadius(
+            Rect.fromLTWH(size.width * 0.62, size.height * 0.09,
+                size.width * 0.38, size.height * 0.178),
+            const Radius.circular(10),
+          ),
+          Paint()
+            ..color = Colors.red[700]!
+            ..style = PaintingStyle.fill,
+        );
+
+        canvas.drawRRect(
+          RRect.fromRectAndRadius(
+            Rect.fromLTWH(size.width * 0.62, size.height * 0.085,
+                size.width * 0.365, size.height * 0.17),
+            const Radius.circular(10),
+          ),
+          Paint()
+            ..color = Colors.red[300]!
+            ..style = PaintingStyle.fill,
+        );
+      } else {
+        // Single Input Correct
+        canvas.drawRRect(
+          RRect.fromRectAndRadius(
+            Rect.fromLTWH(size.width * 0.62, size.height * 0.085,
+                size.width * 0.365, size.height * 0.17),
+            const Radius.circular(10),
+          ),
+          Paint()
+            ..color = Colors.green[700]!
+            ..style = PaintingStyle.stroke
+            ..strokeWidth = 2,
+        );
+
+        canvas.drawRRect(
+          RRect.fromRectAndRadius(
+            Rect.fromLTWH(size.width * 0.633, size.height * 0.09,
+                size.width * 0.365, size.height * 0.175),
+            const Radius.circular(10),
+          ),
+          Paint()
+            ..color = Colors.green[700]!
+            ..style = PaintingStyle.fill,
+        );
+
+        canvas.drawRRect(
+          RRect.fromRectAndRadius(
+            Rect.fromLTWH(size.width * 0.62, size.height * 0.085,
+                size.width * 0.365, size.height * 0.17),
+            const Radius.circular(10),
+          ),
+          Paint()
+            ..color = Colors.green[300]!
+            ..style = PaintingStyle.fill,
+        );
+      }
+    } else {
+      if (currentAngle != 0) {
+        // Double Input Wrong
+        canvas.drawRRect(
+          RRect.fromRectAndRadius(
+            Rect.fromLTWH(size.width * 0.63, size.height * 0.1,
+                size.width * 0.15, size.height * 0.16),
+            const Radius.circular(10),
+          ),
+          Paint()
+            ..color = Colors.red[700]!
+            ..style = PaintingStyle.fill,
+        );
+
+        canvas.drawRRect(
+          RRect.fromRectAndRadius(
+            Rect.fromLTWH(size.width * 0.85, size.height * 0.1,
+                size.width * 0.15, size.height * 0.16),
+            const Radius.circular(10),
+          ),
+          Paint()
+            ..color = Colors.red[700]!
+            ..style = PaintingStyle.fill,
+        );
+        canvas.drawRRect(
+          RRect.fromRectAndRadius(
+            Rect.fromLTWH(size.width * 0.62, size.height * 0.09,
+                size.width * 0.15, size.height * 0.16),
+            const Radius.circular(10),
+          ),
+          Paint()
+            ..color = Colors.red[300]!
+            ..style = PaintingStyle.fill,
+        );
+
+        canvas.drawRRect(
+          RRect.fromRectAndRadius(
+            Rect.fromLTWH(size.width * 0.84, size.height * 0.09,
+                size.width * 0.15, size.height * 0.16),
+            const Radius.circular(10),
+          ),
+          Paint()
+            ..color = Colors.red[300]!
+            ..style = PaintingStyle.fill,
+        );
+        canvas.drawRRect(
+          RRect.fromRectAndRadius(
+            Rect.fromLTWH(size.width * 0.62, size.height * 0.09,
+                size.width * 0.15, size.height * 0.16),
+            const Radius.circular(10),
+          ),
+          Paint()
+            ..color = Colors.red[700]!
+            ..style = PaintingStyle.stroke
+            ..strokeWidth = 2,
+        );
+
+        canvas.drawRRect(
+          RRect.fromRectAndRadius(
+            Rect.fromLTWH(size.width * 0.84, size.height * 0.09,
+                size.width * 0.15, size.height * 0.16),
+            const Radius.circular(10),
+          ),
+          Paint()
+            ..color = Colors.red[700]!
+            ..style = PaintingStyle.stroke
+            ..strokeWidth = 2,
+        );
+      } else {
+        // Double Input Correct
+        canvas.drawRRect(
+            RRect.fromRectAndRadius(
+              Rect.fromLTWH(size.width * 0.63, size.height * 0.1,
+                  size.width * 0.15, size.height * 0.16),
+              const Radius.circular(10),
+            ),
+            Paint()
+              ..color = Colors.green[700]!
+              ..style = PaintingStyle.fill);
+
+        canvas.drawRRect(
+            RRect.fromRectAndRadius(
+              Rect.fromLTWH(size.width * 0.84, size.height * 0.1,
+                  size.width * 0.15, size.height * 0.16),
+              const Radius.circular(10),
+            ),
+            Paint()
+              ..color = Colors.green[700]!
+              ..style = PaintingStyle.fill);
+
+        canvas.drawRRect(
+          RRect.fromRectAndRadius(
+            Rect.fromLTWH(size.width * 0.62, size.height * 0.09,
+                size.width * 0.15, size.height * 0.16),
+            const Radius.circular(10),
+          ),
+          Paint()
+            ..color = Colors.green[300]!
+            ..style = PaintingStyle.fill,
+        );
+
+        canvas.drawRRect(
+          RRect.fromRectAndRadius(
+            Rect.fromLTWH(size.width * 0.83, size.height * 0.09,
+                size.width * 0.15, size.height * 0.16),
+            const Radius.circular(10),
+          ),
+          Paint()
+            ..color = Colors.green[300]!
+            ..style = PaintingStyle.fill,
+        );
+        canvas.drawRRect(
+          RRect.fromRectAndRadius(
+            Rect.fromLTWH(size.width * 0.62, size.height * 0.09,
+                size.width * 0.15, size.height * 0.16),
+            const Radius.circular(10),
+          ),
+          Paint()
+            ..color = Colors.green[700]!
+            ..style = PaintingStyle.stroke
+            ..strokeWidth = 2,
+        );
+
+        canvas.drawRRect(
+          RRect.fromRectAndRadius(
+            Rect.fromLTWH(size.width * 0.83, size.height * 0.09,
+                size.width * 0.15, size.height * 0.16),
+            const Radius.circular(10),
+          ),
+          Paint()
+            ..color = Colors.green[700]!
+            ..style = PaintingStyle.stroke
+            ..strokeWidth = 2,
+        );
+      }
     }
   }
 
@@ -282,7 +460,7 @@ class DoubleScalePainter extends CustomPainter {
       if (numberOrder == 0) {
         textPainter.paint(
           canvas,
-          Offset(size.width * 0.80 - textPainter.width / 2, size.height * 0.12),
+          Offset(size.width * 0.81 - textPainter.width / 2, size.height * 0.12),
         );
       } else if (numberOrder == 1) {
         textPainter.paint(
@@ -303,11 +481,11 @@ class DoubleScalePainter extends CustomPainter {
     }
   }
 
-  void drawPlaceholder(Canvas canvas, Size size, Paint paintLight,
+  void _drawPlaceholder(Canvas canvas, Size size, Paint paintLight,
       Paint paintDeep, double left, double top) {
     canvas.drawRRect(
       RRect.fromRectAndRadius(
-        Rect.fromLTWH(left + 6, top + 6, size.width * 0.38, size.height * 0.20),
+        Rect.fromLTWH(left + 6, top + 6, size.width * 0.4, size.height * 0.20),
         const Radius.circular(10),
       ),
       paintDeep,
@@ -315,7 +493,7 @@ class DoubleScalePainter extends CustomPainter {
 
     canvas.drawRRect(
       RRect.fromRectAndRadius(
-        Rect.fromLTWH(left, top, size.width * 0.38, size.height * 0.20),
+        Rect.fromLTWH(left, top, size.width * 0.4, size.height * 0.20),
         const Radius.circular(10),
       ),
       paintLight,
@@ -323,7 +501,7 @@ class DoubleScalePainter extends CustomPainter {
   }
 
   @override
-  bool shouldRepaint(covariant DoubleScalePainter oldDelegate) {
+  bool shouldRepaint(covariant ScalePainter oldDelegate) {
     return oldDelegate.leftWeight != leftWeight ||
         oldDelegate.rightWeight != rightWeight ||
         oldDelegate.rightSecondWeight != rightSecondWeight;

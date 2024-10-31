@@ -10,7 +10,6 @@ class BoxController extends GetxController {
   final leftWeight = 0.obs;
   final rightWeight = 0.obs;
   final rightSecondWeight = 0.obs;
-  final isToggled = false.obs;
   final arguments = Get.arguments;
   int dropOrder = 1;
 
@@ -41,20 +40,23 @@ class BoxController extends GetxController {
     update(['scale']);
   }
 
-  void addLeft({int newValue = 1}) {
-    leftWeight.value += newValue;
-    update(['scale']);
+  void submit(bool isSingleInput) {
+    if (isSingleInput) {
+      setRightSecondWeight = 0;
+    } else {
+      rightWeight.value = 0;
+      rightSecondWeight.value = 0;
+    }
+    update(['scale', 'lever']);
   }
 
-  void addRight({int newValue = 1}) {
-    rightSecondWeight.value += newValue;
-    update(['scale']);
-  }
-
-  void reset() {
-    rightWeight.value = 0;
-    rightSecondWeight.value = 0;
-    isToggled.toggle();
+  void reset(bool isSingleInput) {
+    if (isSingleInput) {
+      setRightSecondWeight = 0;
+    } else {
+      rightWeight.value = 0;
+      rightSecondWeight.value = 0;
+    }
     update(['scale', 'lever']);
   }
 
