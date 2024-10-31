@@ -8,7 +8,7 @@ void main() {
   runApp(
     GetMaterialApp(
       title: "Application",
-      initialRoute: AppPages.INITIAL,
+      initialRoute: AppPages.initial,
       getPages: AppPages.routes,
       debugShowCheckedModeBanner: false,
       theme: ThemeData(scaffoldBackgroundColor: const Color(0xFFB3E5FC)),

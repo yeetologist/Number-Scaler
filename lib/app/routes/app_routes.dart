@@ -3,12 +3,12 @@ part of 'app_pages.dart';
 
 abstract class Routes {
   Routes._();
-  static const HOME = _Paths.HOME;
-  static const BOX = _Paths.BOX;
+  static const home = _Paths.home;
+  static const box = _Paths.box;
 }
 
 abstract class _Paths {
   _Paths._();
-  static const HOME = '/home';
-  static const BOX = '/box';
+  static const home = '/home';
+  static const box = '/box';
 }

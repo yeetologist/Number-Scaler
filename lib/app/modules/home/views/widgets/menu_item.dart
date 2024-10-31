@@ -7,9 +7,19 @@ class MenuItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ElevatedButton(
-      onPressed: onClick,
-      child: Text(name),
+    return Padding(
+      padding: const EdgeInsets.all(8.0),
+      child: SizedBox(
+        width: MediaQuery.of(context).size.width,
+        height: MediaQuery.of(context).size.height * 0.1,
+        child: ElevatedButton(
+          onPressed: onClick,
+          child: Text(
+            name,
+            style: Theme.of(context).textTheme.titleLarge,
+          ),
+        ),
+      ),
     );
   }
 }
