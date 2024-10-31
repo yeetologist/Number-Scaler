@@ -31,7 +31,6 @@ class _AnimatedLeverState extends State<AnimatedLever>
 
     _animation =
         Tween<double>(begin: 0, end: 90 * pi / 180).animate(_controller);
-    debugPrint(_animation.toString());
 
     _animation = CurvedAnimation(
       parent: _controller,
