@@ -42,17 +42,6 @@ class _CarouselExampleState extends State<CarouselExample> {
     }
   }
 
-  // void _onScroll() {
-  //   final offset = _scrollController.offset;
-  //   final index = (offset / itemExtent).round();
-  //   if (index != _selectedIndex) {
-  //     setState(() {
-  //       _selectedIndex = index;
-  //     });
-  //     widget.onMiddleItemChanged?.call(index);
-  //   }
-  // }
-
   @override
   void dispose() {
     _scrollController.removeListener(_onScroll);
