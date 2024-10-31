@@ -136,19 +136,21 @@ class KnobPainter extends CustomPainter {
 }
 
 class NumberKnob extends StatefulWidget {
-  final double value;
-  final ValueChanged<double>? onChanged;
-  final double min;
-  final double max;
-  final double step;
+  final int value;
+  final ValueChanged<int>? onChanged;
+  final ValueChanged<bool>? isLeftPressed;
+  final int min;
+  final int max;
+  final int step;
 
   const NumberKnob({
     super.key,
     required this.value,
     this.onChanged,
-    this.min = 0.0,
-    this.max = 1000.0,
-    this.step = 1.0,
+    this.min = 0,
+    this.max = 1000,
+    this.step = 1,
+    this.isLeftPressed,
   });
 
   @override
@@ -178,8 +180,9 @@ class _NumberKnobState extends State<NumberKnob> {
     });
   }
 
-  void _updateValue(double change) {
+  void _updateValue(int change) {
     final newValue = (widget.value + change).clamp(widget.min, widget.max);
+    widget.isLeftPressed?.call(isLeftPressed);
     widget.onChanged?.call(newValue);
   }
 
