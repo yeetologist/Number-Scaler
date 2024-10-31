@@ -23,15 +23,15 @@ class NumberBox extends StatelessWidget {
         borderRadius: BorderRadius.circular(8),
         boxShadow: [
           BoxShadow(
-            color: Colors.black,
+            color: const Color.fromARGB(255, 65, 65, 65),
             // blurRadius: 4,
-            offset: const Offset(4, 4),
+            offset: const Offset(6, 6),
           ),
         ],
       ),
       child: Center(
         child: Text(
-          number.toString(),
+          number.toStringAsFixed(0),
           style: const TextStyle(
             color: Colors.white,
             fontSize: 38,
