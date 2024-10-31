@@ -1,16 +1,9 @@
-import 'dart:math';
-
+import 'dart:math' show pi;
 import 'package:flutter/material.dart';
 
+// First, create an animated widget that will contain our CustomPainter
 class AnimatedLever extends StatefulWidget {
-  final bool isToggled;
-  final Duration duration;
-
-  const AnimatedLever({
-    super.key,
-    this.isToggled = false,
-    this.duration = const Duration(milliseconds: 300),
-  });
+  const AnimatedLever({super.key});
 
   @override
   State<AnimatedLever> createState() => _AnimatedLeverState();
@@ -25,27 +18,17 @@ class _AnimatedLeverState extends State<AnimatedLever>
   void initState() {
     super.initState();
     _controller = AnimationController(
-      duration: widget.duration,
+      duration: const Duration(milliseconds: 100),
       vsync: this,
     );
 
-    _animation =
-        Tween<double>(begin: 0, end: 90 * pi / 180).animate(_controller);
-
-    _animation = CurvedAnimation(
+    _animation = Tween<double>(
+      begin: 0,
+      end: -(pi / 2), // 90 degrees in radians
+    ).animate(CurvedAnimation(
       parent: _controller,
-      curve: Curves.linear,
-    );
-  }
-
-  @override
-  void didUpdateWidget(AnimatedLever oldWidget) {
-    super.didUpdateWidget(oldWidget);
-    if (widget.isToggled) {
-      _controller.forward(from: 0);
-    } else {
-      _controller.reverse();
-    }
+      curve: Curves.easeInOut,
+    ));
   }
 
   @override
@@ -54,40 +37,42 @@ class _AnimatedLeverState extends State<AnimatedLever>
     super.dispose();
   }
 
+  void _toggleRotation() {
+    if (_controller.status == AnimationStatus.completed) {
+      _controller.reverse();
+    } else {
+      _controller.forward();
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
-    return AnimatedBuilder(
-      animation: _animation,
-      builder: (context, child) {
-        return Align(
-          alignment: Alignment.centerRight,
-          child: Transform.rotate(
-            angle: _animation.value,
-            child: CustomPaint(
-              painter: AnimatedLeverPainter(
-                isToggled: widget.isToggled,
-              ),
-              size: const Size(200, 100),
-            ),
-          ),
-        );
-      },
+    return GestureDetector(
+      onTap: _toggleRotation,
+      child: Stack(children: [
+        AnimatedBuilder(
+          animation: _animation,
+          builder: (context, child) {
+            return CustomPaint(
+              painter: AnimatedLeverPainter(rotationAngle: _animation.value),
+              size: const Size(300, 100),
+            );
+          },
+        ),
+        CustomPaint(
+          painter: StillLever(),
+          size: const Size(300, 100),
+        ),
+      ]),
     );
   }
 }
 
-class AnimatedLeverPainter extends CustomPainter {
-  final bool isToggled;
-
-  AnimatedLeverPainter({
-    required this.isToggled,
-  });
-
+class StillLever extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
-    final paintPink = Paint()
-      ..color = const Color(0xFFb75eba)
-      ..strokeWidth = 10
+    final paintBlue = Paint()
+      ..color = const Color(0xFF3c79b0)
       ..style = PaintingStyle.fill;
 
     final paintGreen = Paint()
@@ -98,42 +83,19 @@ class AnimatedLeverPainter extends CustomPainter {
       ..color = const Color.fromARGB(255, 70, 130, 140)
       ..style = PaintingStyle.fill;
 
-    final paintBlue = Paint()
-      ..color = const Color(0xFF3c79b0)
-      ..style = PaintingStyle.fill;
-
-    // Calculate positions based on animation progress
-    // final startX = size.width * 0.7;
-    // final endX = size.width * 0.7;
-    // final currentX = startX + (endX - startX) * progress;
-
     // Draw the base rectangles with rounded corners
     canvas.drawRRect(
       RRect.fromRectXY(
         Rect.fromLTWH(
           size.width * 0.7,
-          size.height * 0,
+          size.height * -0.05,
           size.width * 0.4,
-          size.height * 0.2,
+          size.height * 0.25,
         ),
         50,
         50,
       ),
       paintBlue,
-    );
-
-    canvas.drawRRect(
-      RRect.fromRectXY(
-        Rect.fromLTWH(
-          size.width * 0.4,
-          size.height * 0,
-          size.width * 0.4,
-          size.height * 0.2,
-        ),
-        50,
-        50,
-      ),
-      paintPink,
     );
 
     // Draw the circle knob
@@ -151,7 +113,53 @@ class AnimatedLeverPainter extends CustomPainter {
   }
 
   @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) {
+    return false;
+  }
+}
+
+class AnimatedLeverPainter extends CustomPainter {
+  final double rotationAngle;
+
+  AnimatedLeverPainter({required this.rotationAngle});
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    // Save the current canvas state
+    canvas.save();
+
+    // Move the canvas origin to the rotation point (where the circle is)
+    canvas.translate(size.width * 0.8, size.height * 0.1);
+    // Apply rotation
+    canvas.rotate(rotationAngle);
+    // Move the canvas back
+    canvas.translate(-size.width * 0.8, -size.height * 0.1);
+
+    final paintPink = Paint()
+      ..color = const Color(0xFFb75eba)
+      ..strokeWidth = 10
+      ..style = PaintingStyle.fill;
+
+    canvas.drawRRect(
+      RRect.fromRectXY(
+        Rect.fromLTWH(
+          size.width * 0.5,
+          size.height * -0.05,
+          size.width * 0.4,
+          size.height * 0.25,
+        ),
+        50,
+        50,
+      ),
+      paintPink,
+    );
+
+    // Restore the canvas state
+    canvas.restore();
+  }
+
+  @override
   bool shouldRepaint(covariant AnimatedLeverPainter oldDelegate) {
-    return oldDelegate.isToggled != isToggled;
+    return oldDelegate.rotationAngle != rotationAngle;
   }
 }

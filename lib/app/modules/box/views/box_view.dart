@@ -59,15 +59,10 @@ class BoxView extends GetView<BoxController> {
                 },
               ),
             ),
-            GetBuilder<BoxController>(
-              id: 'lever',
-              builder: (controller) => GestureDetector(
-                onTap: controller.reset,
-                child: AnimatedLever(
-                  isToggled: controller.isToggled.value,
-                  duration: Duration(milliseconds: 0),
-                ),
-              ),
+
+            Align(
+              alignment: AlignmentDirectional.centerEnd,
+              child: AnimatedLever(),
             ),
 
             if (controller.arguments['control'] == Control.drag)
