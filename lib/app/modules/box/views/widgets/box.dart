@@ -19,12 +19,11 @@ class NumberBox extends StatelessWidget {
       height: height,
       margin: EdgeInsets.symmetric(horizontal: 8, vertical: 5),
       decoration: BoxDecoration(
-        color: Colors.grey, // Gray color
+        color: Colors.grey,
         borderRadius: BorderRadius.circular(8),
         boxShadow: [
           BoxShadow(
             color: const Color.fromARGB(255, 65, 65, 65),
-            // blurRadius: 4,
             offset: const Offset(6, 6),
           ),
         ],

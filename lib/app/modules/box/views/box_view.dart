@@ -33,10 +33,6 @@ class BoxView extends GetView<BoxController> {
         body: Padding(
           padding: const EdgeInsets.symmetric(vertical: 8),
           child: Column(children: [
-            // GetBuilder<BoxController>(
-            //   builder: (controller) =>
-            //       _buildDragTarget(controller.leftWeight.value),
-            // ),
             Spacer(),
             GetBuilder<BoxController>(
               id: 'scale',
@@ -60,12 +56,10 @@ class BoxView extends GetView<BoxController> {
                 },
               ),
             ),
-
             Align(
               alignment: AlignmentDirectional.centerEnd,
               child: AnimatedLever(),
             ),
-
             if (controller.arguments['control'] == Control.drag)
               Container(
                 color: const Color(0xFF8eb6c9),
@@ -87,7 +81,6 @@ class BoxView extends GetView<BoxController> {
                   ),
                 ),
               ),
-
             if (controller.arguments['control'] == Control.knob)
               Container(
                 color: const Color(0xFF8eb6c9),
@@ -110,7 +103,6 @@ class BoxView extends GetView<BoxController> {
                   ),
                 ),
               ),
-
             if (controller.arguments['control'] == Control.carousel)
               Container(
                 color: const Color(0xFF8eb6c9),

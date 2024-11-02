@@ -5,6 +5,7 @@ class NumberScale extends StatefulWidget {
   final int rightWeight;
   final int rightSecondWeight;
   final bool isSingleInput;
+  final ValueChanged<double>? onAngleChanged;
 
   const NumberScale({
     super.key,
@@ -12,6 +13,7 @@ class NumberScale extends StatefulWidget {
     this.rightWeight = 0,
     this.rightSecondWeight = 0,
     this.isSingleInput = true,
+    this.onAngleChanged,
   });
 
   @override
@@ -19,7 +21,7 @@ class NumberScale extends StatefulWidget {
 }
 
 class _NumberScaleState extends State<NumberScale>
-    with SingleTickerProviderStateMixin {
+    with TickerProviderStateMixin {
   late AnimationController _controller;
   late Animation<double> _animation;
   double currentAngle = 0.0;
@@ -42,6 +44,7 @@ class _NumberScaleState extends State<NumberScale>
     double angle = _calculateAngle(widget.isSingleInput);
     // Limit the rotation to prevent extreme angles
     angle = angle.clamp(-0.3, 0.3);
+    widget.onAngleChanged?.call(angle);
 
     _animation = Tween<double>(
       begin: currentAngle,
@@ -84,52 +87,68 @@ class _NumberScaleState extends State<NumberScale>
 
   @override
   Widget build(BuildContext context) {
-    return AnimatedBuilder(
-      animation: _controller,
-      builder: (context, child) {
-        return Transform.rotate(
-          angle: _animation.value,
-          child: CustomPaint(
-            size: const Size(400, 400),
-            painter: ScalePainter(
-              currentAngle: currentAngle,
-              isSingleInput: widget.isSingleInput,
-              leftWeight: widget.leftWeight,
-              rightWeight: widget.rightWeight,
-              rightSecondWeight: widget.rightSecondWeight,
+    return Stack(children: [
+      AnimatedBuilder(
+        animation: _controller,
+        builder: (context, child) {
+          return Transform.rotate(
+            angle: _animation.value,
+            child: CustomPaint(
+              size: const Size(400, 400),
+              painter: ScaleBasePainter(),
             ),
-          ),
-        );
-      },
-    );
+          );
+        },
+      ),
+      AnimatedBuilder(
+        animation: _controller,
+        builder: (context, child) {
+          return Transform.translate(
+            offset: Offset(0, _animation.value * -100),
+            child: CustomPaint(
+              size: const Size(400, 400),
+              painter: ScaleLeftPillarPainter(
+                currentAngle: currentAngle,
+                isSingleInput: widget.isSingleInput,
+                leftWeight: widget.leftWeight,
+                rightWeight: widget.rightWeight,
+                rightSecondWeight: widget.rightSecondWeight,
+              ),
+            ),
+          );
+        },
+      ),
+      AnimatedBuilder(
+        animation: _controller,
+        builder: (context, child) {
+          return Transform.translate(
+            offset: Offset(0, _animation.value * 100),
+            child: CustomPaint(
+              size: const Size(400, 400),
+              painter: ScaleRightPillarPainter(
+                currentAngle: currentAngle,
+                isSingleInput: widget.isSingleInput,
+                leftWeight: widget.leftWeight,
+                rightWeight: widget.rightWeight,
+                rightSecondWeight: widget.rightSecondWeight,
+              ),
+            ),
+          );
+        },
+      ),
+    ]);
   }
 }
 
-class ScalePainter extends CustomPainter {
-  final bool isSingleInput;
-  final int leftWeight;
-  final int rightWeight;
-  final int rightSecondWeight;
-  final double currentAngle;
-
-  ScalePainter(
-      {this.isSingleInput = true,
-      this.currentAngle = 0,
-      this.leftWeight = 0,
-      this.rightWeight = 0,
-      this.rightSecondWeight = 0});
+class ScaleBasePainter extends CustomPainter {
+  ScaleBasePainter();
 
   @override
   void paint(Canvas canvas, Size size) {
-    final double bulbRadius = 20;
     final paintLightStroke = Paint()
       ..color = const Color(0xFF582c97)
       ..strokeWidth = 10
       ..style = PaintingStyle.stroke;
-
-    final paintLightFill = Paint()
-      ..color = const Color(0xFF582c97)
-      ..style = PaintingStyle.fill;
 
     final paintDeep = Paint()
       ..color = const Color(0xFF341067)
@@ -155,6 +174,39 @@ class ScalePainter extends CustomPainter {
       16,
       paintDeep,
     );
+  }
+
+  @override
+  bool shouldRepaint(covariant ScaleBasePainter oldDelegate) {
+    return false;
+  }
+}
+
+class ScaleLeftPillarPainter extends CustomPainter {
+  final bool isSingleInput;
+  final int leftWeight;
+  final int rightWeight;
+  final int rightSecondWeight;
+  final double currentAngle;
+
+  ScaleLeftPillarPainter(
+      {this.isSingleInput = true,
+      this.currentAngle = 0,
+      this.leftWeight = 0,
+      this.rightWeight = 0,
+      this.rightSecondWeight = 0});
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final double bulbRadius = 20;
+
+    final paintLightFill = Paint()
+      ..color = const Color(0xFF582c97)
+      ..style = PaintingStyle.fill;
+
+    final paintDeep = Paint()
+      ..color = const Color(0xFF341067)
+      ..style = PaintingStyle.fill;
 
     //PILLAR LEFT
     canvas.drawRect(
@@ -175,6 +227,120 @@ class ScalePainter extends CustomPainter {
     //PLACEHOLDER LEFT
     _drawPlaceholder(canvas, size, paintLightFill, paintDeep, size.width * 0,
         size.height * 0.07);
+
+    // Draw the weight numbers
+
+    _drawWeightText(
+        canvas, size, leftWeight.toStringAsFixed(0), 1, isSingleInput);
+    if (isSingleInput) {
+      _drawWeightText(canvas, size, "\u00D7", 0, isSingleInput);
+      _drawWeightText(
+          canvas, size, rightWeight.toStringAsFixed(0), 2, isSingleInput);
+    }
+  }
+
+  void _drawWeightText(Canvas canvas, Size size, String text, int numberOrder,
+      bool isSingleInput) {
+    final textSpan = TextSpan(
+      text: text,
+      style: const TextStyle(
+        color: Colors.white,
+        fontSize: 32,
+        fontWeight: FontWeight.bold,
+      ),
+    );
+    final textPainter = TextPainter(
+      text: textSpan,
+      textDirection: TextDirection.ltr,
+    )..layout();
+
+    if (isSingleInput == true) {
+      if (numberOrder == 0) {
+        textPainter.paint(
+          canvas,
+          Offset(size.width * 0.17 - textPainter.width / 2, size.height * 0.12),
+        );
+      } else if (numberOrder == 1) {
+        textPainter.paint(
+          canvas,
+          Offset(size.width * 0.07 - textPainter.width / 2, size.height * 0.12),
+        );
+      } else if (numberOrder == 2) {
+        textPainter.paint(
+          canvas,
+          Offset(size.width * 0.27 - textPainter.width / 2, size.height * 0.12),
+        );
+      }
+    } else {
+      if (numberOrder == 0) {
+        textPainter.paint(
+          canvas,
+          Offset(size.width * 0.81 - textPainter.width / 2, size.height * 0.12),
+        );
+      } else if (numberOrder == 1) {
+        textPainter.paint(
+          canvas,
+          Offset(size.width * 0.19 - textPainter.width / 2, size.height * 0.13),
+        );
+      } else if (numberOrder == 2) {
+        textPainter.paint(
+          canvas,
+          Offset(size.width * 0.69 - textPainter.width / 2, size.height * 0.12),
+        );
+      }
+    }
+  }
+
+  void _drawPlaceholder(Canvas canvas, Size size, Paint paintLight,
+      Paint paintDeep, double left, double top) {
+    canvas.drawRRect(
+      RRect.fromRectAndRadius(
+        Rect.fromLTWH(left + 6, top + 6, size.width * 0.4, size.height * 0.20),
+        const Radius.circular(10),
+      ),
+      paintDeep,
+    );
+
+    canvas.drawRRect(
+      RRect.fromRectAndRadius(
+        Rect.fromLTWH(left, top, size.width * 0.4, size.height * 0.20),
+        const Radius.circular(10),
+      ),
+      paintLight,
+    );
+  }
+
+  @override
+  bool shouldRepaint(covariant ScaleLeftPillarPainter oldDelegate) {
+    return false;
+  }
+}
+
+class ScaleRightPillarPainter extends CustomPainter {
+  final bool isSingleInput;
+  final int leftWeight;
+  final int rightWeight;
+  final int rightSecondWeight;
+  final double currentAngle;
+
+  ScaleRightPillarPainter(
+      {this.isSingleInput = true,
+      this.currentAngle = 0,
+      this.leftWeight = 0,
+      this.rightWeight = 0,
+      this.rightSecondWeight = 0});
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final double bulbRadius = 20;
+
+    final paintLightFill = Paint()
+      ..color = const Color(0xFF582c97)
+      ..style = PaintingStyle.fill;
+
+    final paintDeep = Paint()
+      ..color = const Color(0xFF341067)
+      ..style = PaintingStyle.fill;
 
     //PILLAR RIGHT
     canvas.drawRect(
@@ -198,11 +364,11 @@ class ScalePainter extends CustomPainter {
 
     // Draw the weight numbers
     _drawWeightBox(canvas, size, isSingleInput, currentAngle);
-    _drawWeightText(canvas, size, "\u00D7", 0, isSingleInput);
-    _drawWeightText(
-        canvas, size, leftWeight.toStringAsFixed(0), 1, isSingleInput);
-    _drawWeightText(
-        canvas, size, rightWeight.toStringAsFixed(0), 2, isSingleInput);
+    if (!isSingleInput) {
+      _drawWeightText(canvas, size, "\u00D7", 0, isSingleInput);
+      _drawWeightText(
+          canvas, size, rightWeight.toStringAsFixed(0), 2, isSingleInput);
+    }
     _drawWeightText(
         canvas, size, rightSecondWeight.toStringAsFixed(0), 3, isSingleInput);
   }
@@ -440,11 +606,6 @@ class ScalePainter extends CustomPainter {
           canvas,
           Offset(size.width * 0.17 - textPainter.width / 2, size.height * 0.12),
         );
-      } else if (numberOrder == 1) {
-        textPainter.paint(
-          canvas,
-          Offset(size.width * 0.07 - textPainter.width / 2, size.height * 0.12),
-        );
       } else if (numberOrder == 2) {
         textPainter.paint(
           canvas,
@@ -461,11 +622,6 @@ class ScalePainter extends CustomPainter {
         textPainter.paint(
           canvas,
           Offset(size.width * 0.81 - textPainter.width / 2, size.height * 0.12),
-        );
-      } else if (numberOrder == 1) {
-        textPainter.paint(
-          canvas,
-          Offset(size.width * 0.19 - textPainter.width / 2, size.height * 0.13),
         );
       } else if (numberOrder == 2) {
         textPainter.paint(
@@ -501,7 +657,7 @@ class ScalePainter extends CustomPainter {
   }
 
   @override
-  bool shouldRepaint(covariant ScalePainter oldDelegate) {
+  bool shouldRepaint(covariant ScaleRightPillarPainter oldDelegate) {
     return oldDelegate.leftWeight != leftWeight ||
         oldDelegate.rightWeight != rightWeight ||
         oldDelegate.rightSecondWeight != rightSecondWeight;

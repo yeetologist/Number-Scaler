@@ -1,7 +1,6 @@
 import 'dart:math' show pi;
 import 'package:flutter/material.dart';
 
-// First, create an animated widget that will contain our CustomPainter
 class AnimatedLever extends StatefulWidget {
   const AnimatedLever({super.key});
 

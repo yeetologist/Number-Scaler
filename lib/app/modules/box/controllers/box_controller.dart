@@ -11,6 +11,7 @@ class BoxController extends GetxController {
   final rightWeight = 0.obs;
   final rightSecondWeight = 0.obs;
   final arguments = Get.arguments;
+  final angle = 0.0.obs;
   int dropOrder = 1;
 
   int get getLeftWeight {
